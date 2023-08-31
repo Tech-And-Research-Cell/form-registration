@@ -9,8 +9,8 @@
 
 </head>
 <body>
+  <canvas id="bgCanvas"></canvas>
 
-  <!-- <canvas id="world" width="auto" height="auto"></canvas> -->
 
 <iframe name="hiddenConfirm" id ="hiddenConfirm" style="display: none;" onload="if(submitted){window.location='thanks.html';}"></iframe>
 <div class="demo-page">
@@ -22,10 +22,6 @@
       <p>
         The Bombay Research Summit, organized by the Tech and Research Cell at MPSTME, is a nexus of innovation and exploration. This event unites inquisitive minds, fostering insights across technology, engineering, and scientific domains. 
     </section>
-
-    
-
-   
 
     <section>
       <form action="https://docs.google.com/forms/d/e/1FAIpQLScH70L1pc-oRW5gwqBbBMbO9gFsDjMl6VkYOcASLn-w6jSAiw/formResponse" method ="post" target="hiddenConfirm" onsubmit="submitted=true">
@@ -47,7 +43,7 @@
       </div>
 
       <div class="nice-form-group">
-        <label>Phonenumber</label>
+        <label>Phone Number</label>
         <input type="tel" placeholder="Your phonenumber" name="entry.993265094" value="" class="icon-left" required />
       </div>
 
@@ -86,15 +82,21 @@
           <input type="checkbox" name="radio" id="BTech" name="entry.2103886598" />
           <label for="BTech" name="entry.2103886598" >BTech</label>
         </div>
-
         <div class="nice-form-group-1" name="entry.2103886598">
           <input type="checkbox" name="radio" id="MBATECH"  name="entry.2103886598"/>
           <label for="MBATECH" name="entry.2103886598">MBATECH</label>
         </div>
-
         <div class="nice-form-group-1" name="entry.2103886598">
           <input type="checkbox" name="radio" id="BTI" name="entry.2103886598" />
           <label for="BTI" name="entry.2103886598" >BTI</label>
+        </div>
+        <div class="nice-form-group-1" name="entry.2103886598">
+          <input type="checkbox" name="radio" id="MCA" name="entry.2103886598" />
+          <label for="MCA" name="entry.2103886598" >MCA</label>
+        </div>
+        <div class="nice-form-group-1" name="entry.2103886598">
+          <input type="checkbox" name="radio" id="others" name="entry.2103886598" />
+          <label for="others" name="entry.2103886598" >Other</label>
         </div>
       </fieldset>
 
@@ -156,6 +158,11 @@
         </div>
 
       </fieldset>
+
+      <div class="nice-form-group" name="entry.126223898">
+        <label name="entry.126223898">If Others , Specify Course and Branch : </label>
+        <input type="text" placeholder="" name="entry.126223898" value="" />
+      </div>
       
     
       <details>
@@ -166,7 +173,7 @@
     </form>
     </section>
 
-    <footer>Made with ♥ By <a href="https://prabir.in">PK</a> </footer>
+    <footer>Made with ♥ By <a href="https://technresearchcell.in">TRC</a> </footer>
   </main>
 </div>
   

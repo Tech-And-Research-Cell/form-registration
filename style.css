@@ -574,13 +574,13 @@ table {
 }
 
 html {
-  font-size: 16px;
+  font-size: 24px;
   box-sizing: border-box;
 }
 
 body {
   background: rgb(2,0,36);
-  background: linear-gradient(#203d45, #94987d);
+  background: #000;
     font-family: Roboto, sans-serif;
   color: #4b5563;
   -webkit-font-smoothing: antialiased;
@@ -590,17 +590,19 @@ body {
 .demo-page {
   margin: 0 auto;
   display: flex;
-  max-width: 55em;
+  max-width: 100em;
+  z-index: 999;
 }
 
 .demo-page .demo-page-navigation {
   width: 18em;
-  padding: 2em 1em;
+  padding: 4em 20em;
 }
 
 @media only screen and (max-width: 750px) {
   .demo-page .demo-page-navigation {
     display: none;
+    padding: 2em 10em;
   }
 }
 .demo-page .demo-page-navigation nav {
@@ -633,13 +635,15 @@ body {
 }
 
 .demo-page .demo-page-content {
-  padding: 2em 1em;
+  padding: 4em 6em;
   max-width: 100%;
 }
 
 @media only screen and (min-width: 750px) {
   .demo-page .demo-page-content {
-    width: calc(100% - 18em);
+    width: 100%;
+    padding: 4em 6em;
+
   }
 }
 footer {
@@ -832,12 +836,9 @@ line-height: 1.1rem;
 }
 
 canvas {
-  position: absolute;
-  bottom: 0;
-  left: 0;
+  position:absolute;
+  top:0;
+  left:0;
+  z-index: -1;
   width: 100%;
-  height: 100%;
-   background: linear-gradient(#203d45, #94987d);
-  color: #fff;
-  font-family: calibri;
 }

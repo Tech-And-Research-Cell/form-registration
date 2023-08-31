@@ -15,7 +15,7 @@
 }
 
 body {
-	margin: 0;
+	margin: 5rem;
 	color: var(--color-text);
 	background-color: var(--color-bg);
 	font-family: "tenon", sans-serif;

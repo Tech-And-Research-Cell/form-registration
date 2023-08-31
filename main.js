@@ -1,239 +1,194 @@
-// // Canvas "world" and Vars for particle mouse effect on canvas
+(function () {
+  var requestAnimationFrame =
+    window.requestAnimationFrame ||
+    window.mozRequestAnimationFrame ||
+    window.webkitRequestAnimationFrame ||
+    window.msRequestAnimationFrame ||
+    function (callback) {
+      window.setTimeout(callback, 1000 / 60);
+    };
+  window.requestAnimationFrame = requestAnimationFrame;
+})();
 
-// var SCREEN_WIDTH = window.innerWidth;
-// var SCREEN_HEIGHT = window.innerHeight;
+// Terrain stuff.
+var background = document.getElementById("bgCanvas"),
+  bgCtx = background.getContext("2d"),
+  width = window.innerWidth,
+  height = document.body.offsetHeight;
 
-// var RADIUS = 70;
+height < 400 ? (height = 400) : height;
 
-// var RADIUS_SCALE = 1;
-// var RADIUS_SCALE_MIN = 0.8;
-// var RADIUS_SCALE_MAX = 1.5;
+background.width = width;
+background.height = height;
 
-// var QUANTITY = 25;
+function Terrain(options) {
+  options = options || {};
+  this.terrain = document.createElement("canvas");
+  this.terCtx = this.terrain.getContext("2d");
+  this.scrollDelay = options.scrollDelay || 90;
+  this.lastScroll = new Date().getTime();
 
-// var canvas;
-// var context;
-// var particles;
+  this.terrain.width = width;
+  this.terrain.height = height;
+  this.fillStyle = options.fillStyle || "#191D4C";
+  this.mHeight = options.mHeight || height;
 
-// var mouseX = SCREEN_WIDTH * 0.5;
-// var mouseY = SCREEN_HEIGHT * 0.5;
-// var mouseIsDown = false;
+  // generate
+  this.points = [];
 
-// function init() {
-//   canvas = document.getElementById("world");
+  var displacement = options.displacement || 140,
+    power = Math.pow(2, Math.ceil(Math.log(width) / Math.log(2)));
 
-//   if (canvas && canvas.getContext) {
-//     context = canvas.getContext("2d");
+  // set the start height and end height for the terrain
+  this.points[0] = this.mHeight; //(this.mHeight - (Math.random() * this.mHeight / 2)) - displacement;
+  this.points[power] = this.points[0];
 
-//     // Register event listeners
-//     window.addEventListener("mousemove", documentMouseMoveHandler, false);
-//     window.addEventListener("mousedown", documentMouseDownHandler, false);
-//     window.addEventListener("mouseup", documentMouseUpHandler, false);
-//     document.addEventListener("touchstart", documentTouchStartHandler, false);
-//     document.addEventListener("touchmove", documentTouchMoveHandler, false);
-//     window.addEventListener("resize", windowResizeHandler, false);
+  // create the rest of the points
+  for (var i = 1; i < power; i *= 2) {
+    for (var j = power / i / 2; j < power; j += power / i) {
+      this.points[j] =
+        (this.points[j - power / i / 2] + this.points[j + power / i / 2]) / 2 +
+        Math.floor(Math.random() * -displacement + displacement);
+    }
+    displacement *= 0.6;
+  }
 
-//     createParticles();
+  document.body.appendChild(this.terrain);
+}
 
-//     windowResizeHandler();
+Terrain.prototype.update = function () {
+  // draw the terrain
+  this.terCtx.clearRect(0, 0, width, height);
+  this.terCtx.fillStyle = this.fillStyle;
 
-//     setInterval(loop, 1000 / 120);
-//   }
-// }
+  if (new Date().getTime() > this.lastScroll + this.scrollDelay) {
+    this.lastScroll = new Date().getTime();
+    this.points.push(this.points.shift());
+  }
 
-// function createParticles() {
-//   particles = [];
+  this.terCtx.beginPath();
+  for (var i = 0; i <= width; i++) {
+    if (i === 0) {
+      this.terCtx.moveTo(0, this.points[0]);
+    } else if (this.points[i] !== undefined) {
+      this.terCtx.lineTo(i, this.points[i]);
+    }
+  }
 
-//   for (var i = 0; i < QUANTITY; i++) {
-//     var particle = {
-//       size: 1,
-//       position: { x: mouseX, y: mouseY },
-//       offset: { x: 0, y: 0 },
-//       shift: { x: mouseX, y: mouseY },
-//       speed: 0.01 + Math.random() * 0.04,
-//       targetSize: 1,
-//       fillColor: "#" + ((0x46166b + 0x123123) | 0).toString(16),
-//       orbit: RADIUS * 0.2 + RADIUS * 0.2 * Math.random(),
-//     };
+  this.terCtx.lineTo(width, this.terrain.height);
+  this.terCtx.lineTo(0, this.terrain.height);
+  this.terCtx.lineTo(0, this.points[0]);
+  this.terCtx.fill();
+};
 
-//     particles.push(particle);
-//   }
-// }
+// Second canvas used for the stars
+bgCtx.fillStyle = "#05004c";
+bgCtx.fillRect(0, 0, width, height);
 
-// function documentMouseMoveHandler(event) {
-//   mouseX = event.clientX - (window.innerWidth - SCREEN_WIDTH) * 0.5;
-//   mouseY = event.clientY - (window.innerHeight - SCREEN_HEIGHT) * 0.5;
-// }
+// stars
+function Star(options) {
+  this.size = Math.random() * 2;
+  this.speed = Math.random() * 0.05;
+  this.x = options.x;
+  this.y = options.y;
+}
 
-// function documentMouseDownHandler(event) {
-//   mouseIsDown = true;
-// }
+Star.prototype.reset = function () {
+  this.size = Math.random() * 2;
+  this.speed = Math.random() * 0.05;
+  this.x = width;
+  this.y = Math.random() * height;
+};
 
-// function documentMouseUpHandler(event) {
-//   mouseIsDown = false;
-// }
+Star.prototype.update = function () {
+  this.x -= this.speed;
+  if (this.x < 0) {
+    this.reset();
+  } else {
+    bgCtx.fillRect(this.x, this.y, this.size, this.size);
+  }
+};
 
-// function documentTouchStartHandler(event) {
-//   if (event.touches.length == 1) {
-//     event.preventDefault();
+function ShootingStar() {
+  this.reset();
+}
 
-//     mouseX = event.touches[0].pageX - (window.innerWidth - SCREEN_WIDTH) * 0.5;
-//     mouseY =
-//       event.touches[0].pageY - (window.innerHeight - SCREEN_HEIGHT) * 0.5;
-//   }
-// }
+ShootingStar.prototype.reset = function () {
+  this.x = Math.random() * width;
+  this.y = 0;
+  this.len = Math.random() * 80 + 10;
+  this.speed = Math.random() * 10 + 6;
+  this.size = Math.random() * 1 + 0.1;
+  // this is used so the shooting stars arent constant
+  this.waitTime = new Date().getTime() + Math.random() * 3000 + 500;
+  this.active = false;
+};
 
-// function documentTouchMoveHandler(event) {
-//   if (event.touches.length == 1) {
-//     event.preventDefault();
+ShootingStar.prototype.update = function () {
+  if (this.active) {
+    this.x -= this.speed;
+    this.y += this.speed;
+    if (this.x < 0 || this.y >= height) {
+      this.reset();
+    } else {
+      bgCtx.lineWidth = this.size;
+      bgCtx.beginPath();
+      bgCtx.moveTo(this.x, this.y);
+      bgCtx.lineTo(this.x + this.len, this.y - this.len);
+      bgCtx.stroke();
+    }
+  } else {
+    if (this.waitTime < new Date().getTime()) {
+      this.active = true;
+    }
+  }
+};
 
-//     mouseX = event.touches[0].pageX - (window.innerWidth - SCREEN_WIDTH) * 0.5;
-//     mouseY =
-//       event.touches[0].pageY - (window.innerHeight - SCREEN_HEIGHT) * 0.5;
-//   }
-// }
+var entities = [];
 
-// function windowResizeHandler() {
-//   SCREEN_WIDTH = window.innerWidth;
-//   SCREEN_HEIGHT = window.innerHeight;
+// init the stars
+for (var i = 0; i < height; i++) {
+  entities.push(
+    new Star({
+      x: Math.random() * width,
+      y: Math.random() * height,
+    })
+  );
+}
 
-//   canvas.width = SCREEN_WIDTH;
-//   canvas.height = SCREEN_HEIGHT;
-// }
+// Add 2 shooting stars that just cycle.
+entities.push(new ShootingStar());
+entities.push(new ShootingStar());
+entities.push(new Terrain({ mHeight: height / 2 - 120 }));
+entities.push(
+  new Terrain({
+    displacement: 120,
+    scrollDelay: 50,
+    fillStyle: "rgb(17,20,40)",
+    mHeight: height / 2 - 60,
+  })
+);
+entities.push(
+  new Terrain({
+    displacement: 100,
+    scrollDelay: 20,
+    fillStyle: "rgb(10,10,5)",
+    mHeight: height / 2,
+  })
+);
 
-// function loop() {
-//   if (mouseIsDown) {
-//     RADIUS_SCALE += (RADIUS_SCALE_MAX - RADIUS_SCALE) * 0.02;
-//   } else {
-//     RADIUS_SCALE -= (RADIUS_SCALE - RADIUS_SCALE_MIN) * 0.02;
-//   }
+//animate background
+function animate() {
+  bgCtx.fillStyle = "#110E19";
+  bgCtx.fillRect(0, 0, width, height);
+  bgCtx.fillStyle = "#ffffff";
+  bgCtx.strokeStyle = "#ffffff";
 
-//   RADIUS_SCALE = Math.min(RADIUS_SCALE, RADIUS_SCALE_MAX);
+  var entLen = entities.length;
 
-//   context.fillStyle = "rgba(0,0,0,0.1)";
-//   context.fillRect(0, 0, context.canvas.width, context.canvas.height);
-
-//   for (i = 0, len = particles.length; i < len; i++) {
-//     var particle = particles[i];
-
-//     var lp = { x: particle.position.x, y: particle.position.y };
-
-//     // Rotation
-//     particle.offset.x += particle.speed;
-//     particle.offset.y += particle.speed;
-
-//     // Follow mouse with some lag
-//     particle.shift.x += (mouseX - particle.shift.x) * particle.speed;
-//     particle.shift.y += (mouseY - particle.shift.y) * particle.speed;
-
-//     // Apply position
-//     particle.position.x =
-//       particle.shift.x +
-//       Math.cos(i + particle.offset.x) * (particle.orbit * RADIUS_SCALE);
-//     particle.position.y =
-//       particle.shift.y +
-//       Math.sin(i + particle.offset.y) * (particle.orbit * RADIUS_SCALE);
-
-//     // Limit to screen bounds
-//     particle.position.x = Math.max(
-//       Math.min(particle.position.x, SCREEN_WIDTH),
-//       0
-//     );
-//     particle.position.y = Math.max(
-//       Math.min(particle.position.y, SCREEN_HEIGHT),
-//       0
-//     );
-
-//     particle.size += (particle.targetSize - particle.size) * 0.05;
-
-//     if (Math.round(particle.size) == Math.round(particle.targetSize)) {
-//       particle.targetSize = 1 + Math.random() * 7;
-//     }
-
-//     context.beginPath();
-// //     context.fillStyle = particle.fillColor;
-// //     context.strokeStyle = particle.fillColor;
-// //     context.lineWidth = particle.size;
-// //     context.moveTo(lp.x, lp.y);
-// //     context.lineTo(particle.position.x, particle.position.y);
-// //     context.stroke();
-// //     context.arc(
-// //       particle.position.x,
-// //       particle.position.y,
-// //       particle.size / 2,
-// //       0,
-// //       Math.PI * 1,
-// //       true
-// //     );
-// //     context.fill();
-// //   }
-// // }
-
-// // window.onload = init;
-
-// window.onload = function () {
-//   var c = document.getElementById("canvas");
-//   var ctx = c.getContext("2d");
-
-//   //height and width
-//   var w = window.innerWidth;
-//   var h = window.innerHeight;
-
-//   canvas.width = w;
-//   canvas.height = h;
-
-//   var maxp = 60;
-//   var particles = [];
-
-//   for (var i = 0; i < maxp; i++) {
-//     particles.push({
-//       x: Math.random() * w,
-//       y: Math.random() * h,
-//       r: Math.random() * 6 + 1,
-//       d: Math.random() * maxp,
-//     });
-//   }
-
-//   function draw() {
-//     ctx.clearRect(0, 0, w, h);
-//     ctx.fillStyle = "#edb375";
-//     ctx.beginPath();
-
-//     for (var i = 0; i < maxp; i++) {
-//       var p = particles[i];
-//       ctx.moveTo(p.x, p.y);
-//       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2, true);
-//     }
-
-//     ctx.fill();
-//     update();
-//   }
-
-//   var angle = 0;
-
-//   function update() {
-//     angle += 0.01;
-
-//     for (var i = 0; i < maxp; i++) {
-//       var p = particles[i];
-//       p.y += Math.cos(angle + p.d) + 1 + p.r / 2;
-//       p.x += Math.sin(angle) * 2;
-
-//       //particles will up when exiting the screen
-
-//       if (p.x > w + 7 || p.x < -7 || p.y > h) {
-//         if (i % 3 > 0) {
-//           particles[i] = { x: Math.random() * w, y: -10, r: p.r, d: p.d };
-//         } else {
-//           if (Math.sin(angle) > 0) {
-//             particles[i] = { x: -7, y: Math.random() * h, r: p.r, d: p.d };
-//           } else {
-//             particles[i] = { x: w + 7, y: Math.random() * h, r: p.r, d: p.d };
-//           }
-//         }
-//       }
-//     }
-//   }
-
-//   setInterval(draw, 30);
-// };
+  while (entLen--) {
+    entities[entLen].update();
+  }
+  requestAnimationFrame(animate);
+}
+animate();
